@@ -1,0 +1,38 @@
+# Android & Gradle
+.gradle/
+build/
+app/build/
+android/app/build/
+android/.gradle/
+*.iml
+.idea/
+local.properties
+.cxx/
+captures/
+*.hprof
+
+# OS & Editor Files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+*.bak
+
+# Legacy / Python caches (if any local scripts used)
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+static/
+models/
+
+# Local credentials and signing keys
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.key

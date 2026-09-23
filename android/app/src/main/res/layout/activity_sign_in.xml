@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp">
+
+    <!-- Top spacer / header alignment -->
+    <View
+        android:id="@+id/spacer_top"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintHeight_percent="0.12"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Brand Emblem & Title -->
+    <LinearLayout
+        android:id="@+id/layout_brand"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/spacer_top">
+
+        <!-- Otter Brand Mark (Badge) -->
+        <FrameLayout
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_marginBottom="16dp">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="6dp"
+                android:src="@drawable/ic_otter_logo"
+                android:scaleType="fitCenter"
+                android:contentDescription="Otter Spotter Logo" />
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Otter Spotter"
+            android:textColor="@color/text_white"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:maxWidth="300dp"
+            android:text="Support giant river otter conservation with crowd-sourced photo collection."
+            android:textColor="@color/text_muted"
+            android:textSize="13sp"
+            android:lineSpacingExtra="3dp" />
+    </LinearLayout>
+
+    <!-- Center Feature Badges Card -->
+    <LinearLayout
+        android:id="@+id/card_features"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:background="#121A2C"
+        android:orientation="vertical"
+        android:padding="16dp"
+        app:layout_constraintTop_toBottomOf="@id/layout_brand">
+
+        <!-- Feature 1 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="28dp"
+                android:layout_height="wrap_content"
+                android:text="⚡"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Automatically capture useful otter images"
+                android:textColor="@color/text_white"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- Feature 2 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="28dp"
+                android:layout_height="wrap_content"
+                android:text="🎯"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Record precise location"
+                android:textColor="@color/text_white"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- Feature 3 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="28dp"
+                android:layout_height="wrap_content"
+                android:text="☁️"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Secure cloud sync when network is available"
+                android:textColor="@color/text_white"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Bottom Actions Container -->
+    <LinearLayout
+        android:id="@+id/layout_bottom_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- Loading Spinner (during auth) -->
+        <ProgressBar
+            android:id="@+id/pb_sign_in_loading"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginBottom="12dp"
+            android:indeterminateTint="@color/color_cyan"
+            android:visibility="gone" />
+
+        <!-- Status Message -->
+        <TextView
+            android:id="@+id/tv_sign_in_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text=""
+            android:textColor="@color/text_muted"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+        <!-- Official Google Sign-In Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_google_sign_in"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:backgroundTint="#FFFFFF"
+            android:text="Sign in with Google"
+            android:textColor="#1F1F1F"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:cornerRadius="8dp"
+            app:icon="@drawable/ic_google_logo"
+            app:iconGravity="textStart"
+            app:iconPadding="14dp"
+            app:iconSize="20dp"
+            app:iconTint="@null" />
+
+        <!-- Continue as Guest Button (Fieldwork Offline Mode) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_continue_guest"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:text="Continue as Guest (Offline Field Mode)"
+            android:textColor="@color/text_muted"
+            android:textSize="13sp" />
+
+        <!-- Privacy & Offline Footnote -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:text="Sign in to sync photos across devices. You can also link your Google account later from Settings."
+            android:textColor="#5594A3B8"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

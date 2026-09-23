@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_dark">#080C14</color>
+    <color name="bg_surface">#101726</color>
+    <color name="bg_surface_80">#CC101726</color>
+    <color name="color_emerald">#00E676</color>
+    <color name="color_cyan">#00E5FF</color>
+    <color name="color_amber">#FF9100</color>
+    <color name="color_danger">#EF4444</color>
+    <color name="text_white">#F8FAFC</color>
+    <color name="text_muted">#94A3B8</color>
+    <color name="ic_launcher_background">#457bb6</color>
+</resources>
