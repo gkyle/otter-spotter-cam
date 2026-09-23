@@ -10,6 +10,13 @@ ANDROID_DIR="$REPO_ROOT/android"
 
 BUILD_TYPE="release"
 CLEAN_BUILD=false
+if [ -f "$REPO_ROOT/.env" ]; then
+    # shellcheck disable=SC1091
+    set -a
+    source "$REPO_ROOT/.env"
+    set +a
+fi
+
 KEYSTORE="${KEYSTORE_PATH:-$REPO_ROOT/keystore.jks}"
 KEY_ALIAS="${KEY_ALIAS:-UPLOAD_KEY}"
 KEYSTORE_PASS="${KEYSTORE_PASS:-}"

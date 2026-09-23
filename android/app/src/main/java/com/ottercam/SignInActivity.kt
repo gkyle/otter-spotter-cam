@@ -158,19 +158,20 @@ class SignInActivity : AppCompatActivity() {
         binding.tvSignInStatus.visibility = View.VISIBLE
 
         if (statusCode == 10 || statusCode == 12500) {
+            val currentSha1 = getAppCertificateSha1()
             val configuredId = getString(R.string.default_web_client_id)
             MaterialAlertDialogBuilder(this)
                 .setTitle("Google Cloud Setup Notice")
                 .setMessage(
                     "Google Play Services returned error code $statusCode (DEVELOPER_ERROR).\n\n" +
                     "Package Name:\ncom.kylescholz.otterspotter\n\n" +
-                    "Debug SHA-1:\n$DEBUG_SHA1\n\n" +
-                    "Client ID in strings.xml:\n$configuredId\n\n" +
-                    "Note: If you created an 'Android' Client ID, Google also requires a 'Web Application' Client ID in the same project to issue ID tokens, and changes can take up to 10 minutes to propagate."
+                    "Signing Certificate SHA-1:\n$currentSha1\n\n" +
+                    "Client ID in build:\n$configuredId\n\n" +
+                    "Ensure this package name and SHA-1 are registered as an Android OAuth Client in Google Cloud Console."
                 )
                 .setPositiveButton("Copy SHA-1") { _, _ ->
                     val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    clipboard.setPrimaryClip(ClipData.newPlainText("OtterCam SHA1", DEBUG_SHA1))
+                    clipboard.setPrimaryClip(ClipData.newPlainText("OtterSpotter SHA1", currentSha1))
                     Toast.makeText(this, "SHA-1 copied to clipboard", Toast.LENGTH_SHORT).show()
                 }
                 .setNegativeButton("Sign in Demo") { _, _ ->
@@ -206,6 +207,30 @@ class SignInActivity : AppCompatActivity() {
                 navigateToCamera()
             }
             .show()
+    }
+
+    private fun getAppCertificateSha1(): String {
+        return try {
+            val packageInfo = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                packageManager.getPackageInfo(packageName, android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES)
+            } else {
+                @Suppress("DEPRECATION")
+                packageManager.getPackageInfo(packageName, android.content.pm.PackageManager.GET_SIGNATURES)
+            }
+            val signatures = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                packageInfo.signingInfo?.apkContentsSigners
+            } else {
+                @Suppress("DEPRECATION")
+                packageInfo.signatures
+            }
+            val cert = signatures?.firstOrNull()?.toByteArray() ?: return DEBUG_SHA1
+            val md = java.security.MessageDigest.getInstance("SHA-1")
+            val digest = md.digest(cert)
+            digest.joinToString(":") { "%02X".format(it) }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to read app signing certificate", e)
+            DEBUG_SHA1
+        }
     }
 
     private fun signInDemoUser() {

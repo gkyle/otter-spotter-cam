@@ -1,5 +1,4 @@
 <resources>
     <string name="app_name">Otter Spotter</string>
     <string name="camera_permission_required">Camera permission is required to detect otters.</string>
-    <string name="default_web_client_id">945689943529-oe8qmscsgo3988p1p07aomki9p9l8rct.apps.googleusercontent.com</string>
 </resources>
