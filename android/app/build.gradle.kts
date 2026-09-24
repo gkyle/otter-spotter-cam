@@ -42,6 +42,12 @@ android {
         jvmTarget = "17"
     }
 
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
+
     buildFeatures {
         viewBinding = true
     }
@@ -56,22 +62,23 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.activity:activity-ktx:1.9.3")
 
-    // CameraX
-    val cameraxVersion = "1.3.4"
+    // CameraX (1.4.1+ for 16 KB page alignment)
+    val cameraxVersion = "1.4.1"
     implementation("androidx.camera:camera-core:$cameraxVersion")
     implementation("androidx.camera:camera-camera2:$cameraxVersion")
     implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
     implementation("androidx.camera:camera-view:$cameraxVersion")
 
-    // ONNX Runtime Android
-    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.20.0")
+    // ONNX Runtime Android (1.22.0+ for 16 KB page alignment)
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.22.0")
 
-    // TensorFlow Lite
-    val tfliteVersion = "2.16.1"
-    implementation("org.tensorflow:tensorflow-lite:$tfliteVersion")
-    implementation("org.tensorflow:tensorflow-lite-gpu:$tfliteVersion")
-    implementation("org.tensorflow:tensorflow-lite-gpu-api:$tfliteVersion")
+    // Google LiteRT (Successor to TensorFlow Lite with 16 KB page alignment)
+    val litertVersion = "1.4.2"
+    implementation("com.google.ai.edge.litert:litert:$litertVersion")
+    implementation("com.google.ai.edge.litert:litert-gpu:$litertVersion")
+    implementation("com.google.ai.edge.litert:litert-gpu-api:$litertVersion")
 
     // Google Sign-In & Credential Manager
     implementation("com.google.android.gms:play-services-auth:21.2.0")
