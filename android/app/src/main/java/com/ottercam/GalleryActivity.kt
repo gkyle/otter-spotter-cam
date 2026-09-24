@@ -11,6 +11,9 @@ import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import androidx.activity.enableEdgeToEdge
+import androidx.core.view.ViewCompat
+import androidx.core.view.updatePadding
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -55,6 +58,7 @@ class GalleryActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
@@ -66,9 +70,42 @@ class GalleryActivity : AppCompatActivity() {
         binding = ActivityGalleryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setupWindowInsets()
         setupUI()
         setupBackNavigation()
         loadPhotos()
+    }
+
+    private fun setupWindowInsets() {
+        val initialHeaderPadding = binding.layoutHeader.paddingTop
+        val initialFullscreenTopBarPadding = binding.layoutFullscreenTopBar.paddingTop
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, windowInsets ->
+            val insets = windowInsets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            binding.layoutHeader.updatePadding(
+                top = insets.top + initialHeaderPadding,
+                left = insets.left,
+                right = insets.right
+            )
+            binding.rvGallery.updatePadding(
+                bottom = insets.bottom,
+                left = insets.left,
+                right = insets.right
+            )
+            binding.layoutFullscreenTopBar.updatePadding(
+                top = insets.top + initialFullscreenTopBarPadding,
+                left = insets.left,
+                right = insets.right
+            )
+            windowInsets
+        }
+    }
+
+    private fun calculateSpanCount(): Int {
+        val widthDp = resources.configuration.screenWidthDp
+        return maxOf(3, widthDp / 120)
     }
 
     override fun onResume() {
@@ -111,12 +148,12 @@ class GalleryActivity : AppCompatActivity() {
             finish()
         }
 
-        // RecyclerView with 3 Columns
-        galleryAdapter = GalleryAdapter(photos) { position, photo ->
+        // RecyclerView with dynamic columns (responsive for tablets & foldables)
+        galleryAdapter = GalleryAdapter(photos) { position, _ ->
             openFullscreenPhoto(position)
         }
         binding.rvGallery.apply {
-            layoutManager = GridLayoutManager(this@GalleryActivity, 3)
+            layoutManager = GridLayoutManager(this@GalleryActivity, calculateSpanCount())
             adapter = galleryAdapter
         }
 

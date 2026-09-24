@@ -23,8 +23,8 @@
             android:background="@color/bg_surface"
             android:paddingStart="12dp"
             android:paddingEnd="16dp"
-            android:paddingTop="46dp"
-            android:paddingBottom="8dp"
+            android:paddingTop="0dp"
+            android:paddingBottom="2dp"
             android:elevation="4dp">
 
             <ImageButton
@@ -178,7 +178,7 @@
             android:gravity="center_vertical"
             android:background="#CC080C14"
             android:paddingStart="12dp"
-            android:paddingTop="46dp"
+            android:paddingTop="8dp"
             android:paddingEnd="12dp"
             android:paddingBottom="12dp"
             android:layout_gravity="top">

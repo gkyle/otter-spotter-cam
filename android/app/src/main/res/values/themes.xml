@@ -4,15 +4,13 @@
         <item name="colorPrimary">@color/color_cyan</item>
         <item name="colorPrimaryVariant">@color/color_emerald</item>
         <item name="colorOnPrimary">@color/bg_dark</item>
-        <item name="android:statusBarColor">@color/bg_dark</item>
-        <item name="android:navigationBarColor">@color/bg_dark</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 
     <style name="Theme.OtterCam.Fullscreen" parent="Theme.OtterCam">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
-        <item name="android:windowFullscreen">true</item>
-        <item name="android:windowContentOverlay">@null</item>
     </style>
 
     <style name="ShapeAppearance.OtterCam.RoundedThumb" parent="">

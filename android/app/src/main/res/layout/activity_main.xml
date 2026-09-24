@@ -27,8 +27,8 @@
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:paddingTop="46dp"
-        android:paddingBottom="4dp"
+        android:paddingTop="0dp"
+        android:paddingBottom="2dp"
         android:background="#99080C14"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -37,7 +37,7 @@
             android:layout_height="48dp"
             android:paddingStart="0dp"
             android:paddingEnd="8dp"
-            android:paddingTop="2dp"
+            android:paddingTop="0dp"
             android:paddingBottom="2dp">
 
             <ImageView
@@ -207,7 +207,7 @@
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
         android:paddingTop="12dp"
-        android:paddingBottom="24dp"
+        android:paddingBottom="12dp"
         android:background="#CC080C14"
         app:layout_constraintBottom_toBottomOf="parent">
 

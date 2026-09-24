@@ -19,6 +19,9 @@ import com.google.android.material.button.MaterialButton
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.activity.enableEdgeToEdge
+import androidx.core.view.ViewCompat
+import androidx.core.view.updatePadding
 import com.kylescholz.otterspotter.databinding.ActivityMainBinding
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -95,6 +98,7 @@ class MainActivity : AppCompatActivity() {
     private var hasInitializedZoom = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         // Check authentication / guest mode before initializing camera
@@ -112,6 +116,7 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupWindowInsets()
         hideNavigationBars()
 
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -164,6 +169,32 @@ class MainActivity : AppCompatActivity() {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) {
             hideNavigationBars()
+        }
+    }
+
+    private fun setupWindowInsets() {
+        val initialTopPadding = binding.topBar.paddingTop
+        val initialBottomPadding = binding.bottomBar.paddingBottom
+        val initialTopStart = binding.topBar.paddingStart
+        val initialTopEnd = binding.topBar.paddingEnd
+        val initialBottomStart = binding.bottomBar.paddingStart
+        val initialBottomEnd = binding.bottomBar.paddingEnd
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, windowInsets ->
+            val insets = windowInsets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            binding.topBar.updatePadding(
+                top = insets.top + initialTopPadding,
+                left = insets.left + initialTopStart,
+                right = insets.right + initialTopEnd
+            )
+            binding.bottomBar.updatePadding(
+                bottom = insets.bottom + initialBottomPadding,
+                left = insets.left + initialBottomStart,
+                right = insets.right + initialBottomEnd
+            )
+            windowInsets
         }
     }
 
