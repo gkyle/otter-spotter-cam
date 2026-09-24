@@ -1,7 +1,6 @@
 package com.kylescholz.otterspotter
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -14,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.kylescholz.otterspotter.databinding.ItemGalleryThumbnailBinding
 import com.kylescholz.otterspotter.sync.SyncRecord
 import com.kylescholz.otterspotter.sync.SyncStatus
-import java.io.File
 import java.util.concurrent.Executors
 
 class GalleryAdapter(
@@ -131,48 +129,7 @@ class GalleryAdapter(
                 // Fall back to manual decoding below
             }
 
-            // Fallback: decode with inSampleSize
-            try {
-                if (photo.filePath != null && File(photo.filePath).exists()) {
-                    val options = BitmapFactory.Options().apply {
-                        inJustDecodeBounds = true
-                    }
-                    BitmapFactory.decodeFile(photo.filePath, options)
-                    options.inSampleSize = calculateInSampleSize(options, 300, 300)
-                    options.inJustDecodeBounds = false
-                    return BitmapFactory.decodeFile(photo.filePath, options)
-                }
-
-                context.contentResolver.openInputStream(photo.uri)?.use { stream ->
-                    val options = BitmapFactory.Options().apply {
-                        inJustDecodeBounds = true
-                    }
-                    BitmapFactory.decodeStream(stream, null, options)
-                    options.inSampleSize = calculateInSampleSize(options, 300, 300)
-                    options.inJustDecodeBounds = false
-
-                    context.contentResolver.openInputStream(photo.uri)?.use { stream2 ->
-                        return BitmapFactory.decodeStream(stream2, null, options)
-                    }
-                }
-            } catch (_: Exception) {
-            }
-            return null
-        }
-
-        private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
-            val (height: Int, width: Int) = options.outHeight to options.outWidth
-            var inSampleSize = 1
-
-            if (height > reqHeight || width > reqWidth) {
-                val halfHeight: Int = height / 2
-                val halfWidth: Int = width / 2
-
-                while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
-                    inSampleSize *= 2
-                }
-            }
-            return inSampleSize
+            return BitmapUtils.decodeSampledBitmap(context, photo, 300, 300)
         }
     }
 }
