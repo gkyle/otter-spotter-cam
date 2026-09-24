@@ -13,26 +13,22 @@ android {
         targetSdk = 36
         versionCode = 3
         versionName = "0.12"
+
+        resValue(
+            "string",
+            "default_web_client_id",
+            "945689943529-fmoh0kv2h8fad8dmtkq51hugg7oc3o6p.apps.googleusercontent.com"
+        )
     }
 
     buildTypes {
         debug {
-            resValue(
-                "string",
-                "default_web_client_id",
-                "945689943529-ikkpd2veu2djrl8p64k04msl2e9dpg42.apps.googleusercontent.com"
-            )
         }
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
-            )
-            resValue(
-                "string",
-                "default_web_client_id",
-                "945689943529-oe8qmscsgo3988p1p07aomki9p9l8rct.apps.googleusercontent.com"
             )
         }
     }

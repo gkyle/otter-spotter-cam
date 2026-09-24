@@ -23,7 +23,6 @@ class SignInActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignInBinding
     private var googleSignInClient: GoogleSignInClient? = null
-    private var isRetryingWithoutIdToken = false
 
     companion object {
         private const val TAG = "SignInActivity"
@@ -41,15 +40,6 @@ class SignInActivity : AppCompatActivity() {
             handleSignInSuccess(account)
         } catch (e: ApiException) {
             Log.w(TAG, "Google sign in failed: statusCode=${e.statusCode}, message=${e.message}", e)
-            if (e.statusCode == 10 && !isRetryingWithoutIdToken) {
-                // If requestIdToken failed because the Client ID in strings.xml is an Android Client ID
-                // or the Web Application Client ID hasn't been paired yet, attempt basic Google Sign-In
-                Log.i(TAG, "Status 10 detected: Attempting automatic fallback to basic Google Sign-In (profile + email without ID token)...")
-                isRetryingWithoutIdToken = true
-                setupGoogleSignInClient(requestIdToken = false)
-                startGoogleFlow()
-                return@registerForActivityResult
-            }
             handleSignInError(e.statusCode, e.message)
         }
     }
@@ -94,7 +84,6 @@ class SignInActivity : AppCompatActivity() {
 
     private fun setupListeners() {
         binding.btnGoogleSignIn.setOnClickListener {
-            isRetryingWithoutIdToken = false
             initiateGoogleSignIn()
         }
 
@@ -120,7 +109,7 @@ class SignInActivity : AppCompatActivity() {
     private fun startGoogleFlow() {
         setLoading(true)
         val client = googleSignInClient ?: run {
-            setupGoogleSignInClient(!isRetryingWithoutIdToken)
+            setupGoogleSignInClient(requestIdToken = true)
             googleSignInClient!!
         }
         val signInIntent = client.signInIntent
