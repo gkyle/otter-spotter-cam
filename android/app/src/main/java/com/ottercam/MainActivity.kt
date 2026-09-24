@@ -70,6 +70,12 @@ class MainActivity : AppCompatActivity() {
     private var isCapturing: Boolean = false
     private var lastAutoCaptureTimestamp: Long = 0L
 
+    // Auto-Photo Multi-Stage Locking & Stability (Motion Blur Prevention)
+    private var lockStage: Int = 0 // 0 = idle, 1..N = locking/capturing
+    private var requiredStableFrames: Int = 3
+    private var lastLockHitTimestamp: Long = 0L
+    private var prevNormalizedBoxCenter: Pair<Float, Float>? = null
+
     // FPS calculation
     private var frameCount = 0
     private var lastFpsTimestamp = SystemClock.uptimeMillis()
@@ -116,10 +122,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Load saved confidence thresholds
+        // Load saved confidence thresholds & stability settings
         val prefs = getSharedPreferences("otter_cam_prefs", Context.MODE_PRIVATE)
         otterDetector.otterConfidence = prefs.getFloat("otter_conf", 0.25f)
         otterDetector.throatConfidence = prefs.getFloat("throat_conf", 0.25f)
+        requiredStableFrames = prefs.getInt("stability_frames", 3).coerceIn(1, 10)
 
         setupControls()
         setupLocationTracking()
@@ -170,6 +177,7 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         locationManager.stopTracking()
+        resetLockState()
     }
 
     private fun setupControls() {
@@ -249,6 +257,9 @@ class MainActivity : AppCompatActivity() {
             return
         }
         isAutoCaptureArmed = !isAutoCaptureArmed
+        if (!isAutoCaptureArmed) {
+            resetLockState()
+        }
         updateAutoPhotoPillUI()
         Toast.makeText(this, if (isAutoCaptureArmed) "Auto Photo: ON" else "Auto Photo: OFF", Toast.LENGTH_SHORT).show()
     }
@@ -410,6 +421,17 @@ class MainActivity : AppCompatActivity() {
                 .edit().putFloat("throat_conf", value).apply()
         }
 
+        // Set Stability Frames slider (1-10 frames)
+        sheetBinding.sliderStabilityFrames.value = requiredStableFrames.toFloat().coerceIn(1.0f, 10.0f)
+        sheetBinding.tvValStabilityFrames.text = if (requiredStableFrames == 1) "1 frame" else "$requiredStableFrames frames"
+        sheetBinding.sliderStabilityFrames.addOnChangeListener { _, value, _ ->
+            val frames = value.toInt().coerceIn(1, 10)
+            requiredStableFrames = frames
+            sheetBinding.tvValStabilityFrames.text = if (frames == 1) "1 frame" else "$frames frames"
+            getSharedPreferences("otter_cam_prefs", Context.MODE_PRIVATE)
+                .edit().putInt("stability_frames", frames).apply()
+        }
+
         fun updateTogglesUI() {
             sheetBinding.tvStatusAi.text = if (isAiEnabled) "ON" else "OFF"
             sheetBinding.tvStatusAi.setTextColor(ContextCompat.getColor(this, if (isAiEnabled) R.color.color_emerald else R.color.text_muted))
@@ -467,6 +489,7 @@ class MainActivity : AppCompatActivity() {
             updateAutoPhotoPillUI()
             Toast.makeText(this, "AI Inference: ON", Toast.LENGTH_SHORT).show()
         } else {
+            resetLockState()
             updateAutoPhotoPillUI()
             binding.overlayView.clear()
             binding.btnShutterInstant.backgroundTintList = ContextCompat.getColorStateList(this, R.color.text_white)
@@ -555,16 +578,75 @@ class MainActivity : AppCompatActivity() {
 
         val now = SystemClock.uptimeMillis()
 
-        // Auto Photo Trigger: if armed and a throat portrait is spotted (strictly enclosed by whole body)
-        // The toggle switch remains ON until the user turns it off
-        if (isAutoCaptureArmed && detections.isNotEmpty() && !isCapturing && (now - lastAutoCaptureTimestamp >= 2500L)) {
-            Log.i(TAG, "🎯 Auto Photo triggered by throat portrait! Enclosing detections: ${detections.size}")
+        var triggeredPhoto = false
+
+        // Multi-Stage Auto-Capture Locking & Stability (Motion Blur Prevention)
+        if (isAutoCaptureArmed && !isCapturing && (now - lastAutoCaptureTimestamp >= 2500L)) {
+            if (detections.isNotEmpty()) {
+                val primary = detections.maxByOrNull { it.confidence } ?: detections.first()
+                val box = primary.box
+                val centerX = (box.left + box.right) / (2f * frameWidth)
+                val centerY = (box.top + box.bottom) / (2f * frameHeight)
+
+                val prev = prevNormalizedBoxCenter
+                if (prev == null || lockStage == 0) {
+                    lockStage = 1
+                    lastLockHitTimestamp = now
+                    prevNormalizedBoxCenter = Pair(centerX, centerY)
+                    updateLockStateUI(1)
+                    if (requiredStableFrames <= 1) {
+                        triggeredPhoto = true
+                    }
+                } else {
+                    val deltaX = Math.abs(centerX - prev.first)
+                    val deltaY = Math.abs(centerY - prev.second)
+                    val dist = Math.sqrt((deltaX * deltaX + deltaY * deltaY).toDouble()).toFloat()
+
+                    // Movement <= 18% of frame dimension across consecutive frames is considered stable
+                    if (dist <= 0.18f) {
+                        lockStage++
+                        lastLockHitTimestamp = now
+                        prevNormalizedBoxCenter = Pair(centerX, centerY)
+                        updateLockStateUI(lockStage)
+
+                        if (lockStage >= requiredStableFrames) {
+                            triggeredPhoto = true
+                        }
+                    } else {
+                        // Camera moved too fast (> 18%). Hold/reset at Stage 1 and wait for steady frame.
+                        lockStage = 1
+                        lastLockHitTimestamp = now
+                        prevNormalizedBoxCenter = Pair(centerX, centerY)
+                        updateLockStateUI(1)
+                    }
+                }
+            } else {
+                if (lockStage > 0 && now - lastLockHitTimestamp > 600L) {
+                    resetLockState()
+                }
+            }
+        } else {
+            if (lockStage > 0) {
+                resetLockState()
+            }
+        }
+
+        // Map consecutive frame lockStage to visualStage (1=Amber, 2=Cyan, 3=Emerald)
+        val visualStage = when {
+            lockStage <= 0 -> 0
+            lockStage >= requiredStableFrames -> 3
+            lockStage == 1 -> 1
+            else -> 2
+        }
+
+        if (triggeredPhoto) {
+            Log.i(TAG, "🎯 Auto Photo triggered after $lockStage stable hits (target=$requiredStableFrames)! Enclosing detections: ${detections.size}")
             lastAutoCaptureTimestamp = now
             takePhoto(isAutoTriggered = true)
         }
 
-        // Update Overlay
-        binding.overlayView.setResults(detections, wholeBodyBoxes, allDetections, frameWidth, frameHeight)
+        // Update Overlay with active lockStage
+        binding.overlayView.setResults(detections, wholeBodyBoxes, allDetections, frameWidth, frameHeight, visualStage)
 
         // Update Telemetry HUD (FPS & Latency always gray)
         binding.tvHudLatency.text = "${inferMs}ms ($engineLabel)"
@@ -600,9 +682,15 @@ class MainActivity : AppCompatActivity() {
         binding.tvHudDividerDetections.visibility = if (ottersCount > 0 && throatPatternsCount > 0) View.VISIBLE else View.GONE
         binding.layoutHudDetections.visibility = if (ottersCount > 0 || throatPatternsCount > 0) View.VISIBLE else View.GONE
 
-        // Shutter button turns green when a throat pattern is visible
+        // Shutter button turns amber/cyan/emerald corresponding to lock stages, or emerald if manual throat pattern visible
         if (throatPatternsCount > 0) {
-            binding.btnShutterInstant.backgroundTintList = ContextCompat.getColorStateList(this, R.color.color_emerald)
+            val shutterColor = when (visualStage) {
+                1 -> R.color.color_amber
+                2 -> R.color.color_cyan
+                3 -> R.color.color_emerald
+                else -> R.color.color_emerald
+            }
+            binding.btnShutterInstant.backgroundTintList = ContextCompat.getColorStateList(this, shutterColor)
             if (!wasThroatVisible || now - lastThroatHapticTimestamp > 2500) {
                 vibrateThroatSpotted()
                 lastThroatHapticTimestamp = now
@@ -614,6 +702,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateLockStateUI(stage: Int) {
+        // Light haptic feedback on initial lock stage
+        if (stage == 1 && !wasThroatVisible) {
+            vibrateThroatSpotted()
+        }
+    }
+
+    private fun resetLockState() {
+        lockStage = 0
+        prevNormalizedBoxCenter = null
+        updateAutoPhotoPillUI()
+    }
+
     private fun takePhoto(isAutoTriggered: Boolean) {
         val capture = imageCapture ?: run {
             Log.w(TAG, "ImageCapture use case not ready yet")
@@ -623,6 +724,10 @@ class MainActivity : AppCompatActivity() {
 
         if (isCapturing) return
         isCapturing = true
+
+        if (isAutoTriggered) {
+            resetLockState()
+        }
 
         // Visual flash feedback
         triggerShutterFlash()

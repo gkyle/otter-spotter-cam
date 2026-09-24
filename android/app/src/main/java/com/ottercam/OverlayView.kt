@@ -21,6 +21,7 @@ class OverlayView @JvmOverloads constructor(
     var showDebugOutlines: Boolean = false
     var showDetectionBoxes: Boolean = false
     var isAiEnabled: Boolean = true
+    var lockStage: Int = 0
 
     private val greenBorderPaint = Paint().apply {
         color = Color.parseColor("#00E676")
@@ -89,13 +90,15 @@ class OverlayView @JvmOverloads constructor(
         wholeBodyBoxes: List<RectF>,
         allDetections: List<Detection>,
         frameWidth: Int,
-        frameHeight: Int
+        frameHeight: Int,
+        lockStage: Int = 0
     ) {
         this.detections = detections
         this.wholeBodyBoxes = wholeBodyBoxes
         this.allDetections = allDetections
         this.frameWidth = frameWidth
         this.frameHeight = frameHeight
+        this.lockStage = lockStage
         postInvalidate()
     }
 
@@ -103,6 +106,7 @@ class OverlayView @JvmOverloads constructor(
         detections = emptyList()
         wholeBodyBoxes = emptyList()
         allDetections = emptyList()
+        lockStage = 0
         postInvalidate()
     }
 
@@ -148,6 +152,16 @@ class OverlayView @JvmOverloads constructor(
             }
 
             // Draw throat_portrait boxes
+            val activeStageColor = when (lockStage) {
+                1 -> Color.parseColor("#FF9100") // Amber (Hit 1)
+                2 -> Color.parseColor("#00E5FF") // Cyan (Hit 2)
+                3 -> Color.parseColor("#00E676") // Emerald (Hit 3)
+                else -> Color.parseColor("#00E676")
+            }
+            cornerPaint.color = activeStageColor
+            throatBoxPaint.color = activeStageColor
+            textBgPaint.color = activeStageColor
+
             for (det in detections) {
                 val left = det.box.left * scale + offsetX
                 val top = det.box.top * scale + offsetY
@@ -175,16 +189,25 @@ class OverlayView @JvmOverloads constructor(
             }
         }
 
-        // Primary: Draw a 10px green border around the whole viewport when a throat_portrait is visible
+        // Primary: Draw a border around the whole viewport when a throat_portrait is visible
         if (detections.isNotEmpty()) {
             val borderWidth = 10f * resources.displayMetrics.density
             val halfBorder = borderWidth / 2f
+            val borderColor = when (lockStage) {
+                1 -> Color.parseColor("#FF9100") // Amber (Hit 1: Otter spotted)
+                2 -> Color.parseColor("#00E5FF") // Cyan (Hit 2: Locking in)
+                3 -> Color.parseColor("#00E676") // Emerald (Hit 3: Capturing photo)
+                else -> Color.parseColor("#00E676")
+            }
             canvas.drawRect(
                 halfBorder,
                 halfBorder,
                 viewWidth - halfBorder,
                 viewHeight - halfBorder,
-                greenBorderPaint.apply { strokeWidth = borderWidth }
+                greenBorderPaint.apply {
+                    color = borderColor
+                    strokeWidth = borderWidth
+                }
             )
         }
     }
