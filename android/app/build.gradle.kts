@@ -11,8 +11,8 @@ android {
         applicationId = "com.kylescholz.otterspotter"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
-        versionName = "0.14"
+        versionCode = 6
+        versionName = "0.15"
 
         resValue(
             "string",
