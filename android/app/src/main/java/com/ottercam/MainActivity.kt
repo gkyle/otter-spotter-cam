@@ -16,6 +16,9 @@ import android.graphics.Color
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.kylescholz.otterspotter.databinding.ActivityMainBinding
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -103,6 +106,7 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        hideNavigationBars()
 
         cameraExecutor = Executors.newSingleThreadExecutor()
 
@@ -143,9 +147,24 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        hideNavigationBars()
         if (locationManager.hasLocationPermission()) {
             locationManager.startTracking()
         }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            hideNavigationBars()
+        }
+    }
+
+    private fun hideNavigationBars() {
+        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+        insetsController.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        insetsController.hide(WindowInsetsCompat.Type.navigationBars())
     }
 
     override fun onPause() {

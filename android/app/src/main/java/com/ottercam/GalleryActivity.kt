@@ -11,6 +11,9 @@ import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.viewpager2.widget.ViewPager2
 import com.kylescholz.otterspotter.databinding.ActivityGalleryBinding
@@ -70,6 +73,7 @@ class GalleryActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        hideNavigationBars()
         val filter = IntentFilter(OtterSyncWorker.ACTION_SYNC_COMPLETED)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(syncReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
@@ -77,6 +81,20 @@ class GalleryActivity : AppCompatActivity() {
             registerReceiver(syncReceiver, filter)
         }
         loadPhotos()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            hideNavigationBars()
+        }
+    }
+
+    private fun hideNavigationBars() {
+        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+        insetsController.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        insetsController.hide(WindowInsetsCompat.Type.navigationBars())
     }
 
     override fun onPause() {
