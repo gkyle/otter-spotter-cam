@@ -38,7 +38,7 @@ class OtterApiClient(
 
     companion object {
         private const val TAG = "OtterApiClient"
-        const val DEFAULT_BASE_URL = "https://vps-a0d4d22c.vps.ovh.us/api"
+        const val DEFAULT_BASE_URL = "https://otterspotter.kylescholz.com/api"
 
         private fun defaultHttpClient(): OkHttpClient {
             return OkHttpClient.Builder()

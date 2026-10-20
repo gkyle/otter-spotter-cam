@@ -11,13 +11,13 @@ android {
         applicationId = "com.kylescholz.otterspotter"
         minSdk = 26
         targetSdk = 36
-        versionCode = 6
-        versionName = "0.15"
+        versionCode = 7
+        versionName = "0.16"
 
         resValue(
             "string",
             "default_web_client_id",
-            "945689943529-fmoh0kv2h8fad8dmtkq51hugg7oc3o6p.apps.googleusercontent.com"
+            "945689943529-s9u149updin02sotntcma5sd5641taqu.apps.googleusercontent.com"
         )
     }
 
